@@ -119,8 +119,61 @@ def verify_pre_processing():
 
   print(weibull_fits_PyTorch)
 
+
+def tryingTorchSort():
+  print('verify_pre_processing()')
+  fileName = '/home/tahmad/work/stand_alone_libMr/data_from_Steve/weibulls_example_protocol2.npy'
+  data = np.load(fileName, allow_pickle=True)
+  
+  numInstances = 10
+  dataSize = 40000
+  tailSize = 2500
+  distance_multiplier = 0.5
+  
+  data1 = np.zeros(shape=(numInstances,dataSize), dtype=np.float64)
+  weibull_fits_libmr = np.zeros(shape=(numInstances,5), dtype=np.float64)
+  
+  for k in range(numInstances):
+    data1[k,:] = distance_multiplier * data[k][0]
+    weibull_fits_libmr[k,:] = data[k][1]
+  
+  # Pre-processing -- same as weibull.c
+  sign = -1.0 * np.ones(shape=numInstances, dtype=np.float64)
+  data2a =  np.zeros(shape=(numInstances,dataSize), dtype=np.float64)
+  data2b =  np.zeros(shape=(numInstances,tailSize), dtype=np.float64)
+  data2 =  np.zeros(shape=(numInstances,tailSize), dtype=np.float64)
+  
+  translate_amount = 1.0 * np.ones(shape=(numInstances,1), dtype=np.float64)
+  small_score = np.zeros(shape=(numInstances,1), dtype=np.float64) 
+  
+  for k in range(numInstances):
+    data2a[k,:] = sign[k] * data1[k,:]
+    data2b[k,:] = (np.sort(sign[k] * data1[k,:])[::-1])[:tailSize]
+    small_score[k] = data2b[k,tailSize-1]
+    data2[k,:] = data2b[k,:] + translate_amount[k] - small_score[k]
+  
+  print(data2b[0,:10])
+  print(data2[0,:10])
+  
+  # PyTorch
+  
+  dataTensor = torch.from_numpy(data2a)
+  sortedTensor = torch.topk(dataTensor, tailSize, dim=1, largest=True, sorted=True).values
+  smallScoreTensor = sortedTensor[:,tailSize-1].unsqueeze(1)
+  trnaslateAmoutTensor = torch.from_numpy(translate_amount)
+  processedTensor = sortedTensor + trnaslateAmoutTensor - smallScoreTensor 
+  
+  print(processedTensor[0,:10])
+  
+  A = fit(processedTensor)
+  print(A)
+  
+  resultTensor = torch.cat([A[:,1].cpu().unsqueeze(1),A[:,0].cpu().unsqueeze(1),trnaslateAmoutTensor,smallScoreTensor], dim=1)
+  print(resultTensor)
+
 if __name__ == '__main__':
   #main()
   #main2()
-  verify_pre_processing()
+  #verify_pre_processing()
+  tryingTorchSort()
   
