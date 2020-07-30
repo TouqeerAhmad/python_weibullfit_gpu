@@ -28,7 +28,6 @@ def test_weibullFit():
     return
 
 
-
 def test_determine_splits():	
     dataTensor = torch.rand(size=(1000,40000), dtype=torch.float64)	
     dataTensor = dataTensor.cuda()	
