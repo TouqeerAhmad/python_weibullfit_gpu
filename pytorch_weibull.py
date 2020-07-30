@@ -1,6 +1,7 @@
 import numpy as np
 import torch
-from weibull.backend_pytorch import fit
+from backend_weibull import fit
+#import weibull
 import timeit
 import os, sys
 from pynvml import *
@@ -62,14 +63,36 @@ def weibullFitting(dataTensor, tailSize, sign, isSorted = 0):
 
 
 def weibullFilltingInBatches(data, tailSize, sign, isSorted = 0):
-#  splits = determine_splits(data, tailSize, isSorted)
+  splits = determine_splits(data, tailSize, isSorted)
   
-#  if splits == 1:
-#    data = data.cuda()
-#    result = weibullFitting(data, tailSize, sign, isSorted)
-#  else:
-
-  return  
+  if splits == 1:
+    data = data.cuda()
+    result = weibullFitting(data, tailSize, sign, isSorted)
+    return result.cpu()
+  else:
+    N =  inputTensor.shape[0]
+    dtype = dataTensor.dtype
+    batchSize = np.ceil(N / spilts)
+    resultTensor = torch.zeros(size=(N,5), dtype=dtype)
+    
+    for batchIter in range(splits-1):
+      startIndex = batchIter*batchSize
+      endIndex = startIndex + batchSize - 1
+      data_batch = data[startIndex:endIndex,:].cuda()
+      result_batch = weibullFitting(data_batch, tailSize, sign, isSorted)
+      resultTensor[startIndex:endIndex,:] = result_batch.cpu()
+      
+    
+    # process the left-over
+    
+    startIndex = (splits-1)*batchSize
+    endIndex = N - 1
+    
+    data_batch = data[startIndex:endIndex,:].cuda()
+    result_batch = weibullFitting(data_batch, tailSize, sign, isSorted)
+    resultTensor[startIndex:endIndex,:] = result_batch.cpu()
+    
+  return resultTensor   
 
 
 def FitLow(data, tailSize, isSorted = 0):
