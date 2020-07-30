@@ -59,13 +59,30 @@ def weibullFitting(dataTensor, tailSize, sign, isSorted = 0):
 
   return resultTensor
 
-def FitLow(data, tailSize, isSorted = 0):
-  return weibullFitting(data, tailSize, -1, isSorted)
+
+
+def weibullFilltingInBatches(data, tailSize, sign, isSorted = 0):
+#  splits = determine_splits(data, tailSize, isSorted)
   
+#  if splits == 1:
+#    data = data.cuda()
+#    result = weibullFitting(data, tailSize, sign, isSorted)
+#  else:
+
+  return  
+
+
+def FitLow(data, tailSize, isSorted = 0):
+  if (data.is_cuda):
+    return weibullFitting(data, tailSize, -1, isSorted)
+  else:
+    return weibullFilltingInBatches(data, tailSize, -1, isSorted) 
   
 def FitHigh(data, tailSize, isSorted = 0):
-  return weibullFitting(data, tailSize, 1, isSorted)
-  
+  if (data.is_cuda):
+    return weibullFitting(data, tailSize, 1, isSorted)
+  else:
+    return weibullFilltingInBatches(data, tailSize, 1, isSorted)
 
 def test_weibullFit():
   # getting the tensor ready to get the weibull fits for all instances 
