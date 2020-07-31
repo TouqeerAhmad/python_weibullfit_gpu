@@ -81,10 +81,6 @@ class weibull:
         batchSize = int(np.ceil(N / self.splits))
         resultTensor = torch.zeros(size=(N,2), dtype=dtype)
         
-        print(N)
-        print(self.splits)
-        print(batchSize)
-        
         for batchIter in range(int(self.splits-1)):
           startIndex = batchIter*batchSize
           endIndex = startIndex + batchSize - 1
@@ -92,16 +88,9 @@ class weibull:
           result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
           resultTensor[startIndex:endIndex,:] = result_batch.cpu()
           
-          print(batchIter)
-          print(startIndex)
-          print(endIndex)
-          
         # process the left-over
         startIndex = (self.splits-1)*batchSize
         endIndex = N - 1
-        
-        print(startIndex)
-        print(endIndex)
           
         data_batch = dataTensor[startIndex:endIndex,:].cuda()
         result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
