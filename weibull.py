@@ -4,21 +4,28 @@ import os, sys
 from pynvml import *
 
 class weibull:
-    def __init__(self):
+    def __init__(self, saved_model=None):
+        if saved_model:
+            self.wbFits = torch.zeros(saved_model['Scale'].shape[0],2)
+            self.wbFits[:, 1] = saved_model['Scale']
+            self.wbFits[:, 0] = saved_model['Shape']
+            self.sign = saved_model['signTensor']
+            self._ = saved_model['trnaslateAmoutTensor']
+            self.smallScoreTensor = saved_model['smallScoreTensor']
         return
 
+
     def return_all_parameters(self):
-        return dict(Scale = self.wbFits[:, 1].unsqueeze(1),
-                    Shape = self.wbFits[:, 0].unsqueeze(1),
-                    signTensor = self.sign * torch.ones((self.wbFits.shape[0], 1)),
-                    trnaslateAmoutTensor = torch.ones((self.wbFits.shape[0], 1)),
+        return dict(Scale = self.wbFits[:, 1],
+                    Shape = self.wbFits[:, 0],
+                    signTensor = self.sign,
+                    trnaslateAmoutTensor = 1,
                     smallScoreTensor = self.smallScoreTensor)
 
+
     def FitLow(self,data, tailSize, isSorted=False):
-        
         self.sign = -1
         self._determine_splits(data, tailSize, isSorted)
-        
         if self.splits == 1:
             return self._weibullFitting(data, tailSize, isSorted)
         else:
@@ -26,10 +33,8 @@ class weibull:
             
 
     def FitHigh(self, data, tailSize, isSorted=False):
-        
         self.sign = 1
         self._determine_splits(data, tailSize, isSorted)
-        
         if self.splits == 1:
             return self._weibullFitting(data, tailSize, isSorted)
         else:
@@ -42,11 +47,15 @@ class weibull:
         :param distances: a 2-D tensor
         :return:
         """
+        self.deviceName = distances.device
         scale_tensor = self.wbFits[:,1]
         shape_tensor = self.wbFits[:, 0]
-        distances = torch.transpose(distances.repeat(shape_tensor.shape[0],1) + 1 - self.smallScoreTensor,1,0)
-        weibulls = torch.distributions.weibull.Weibull(scale_tensor,shape_tensor)
+        if self.sign == -1:
+            distances = -distances
+        distances = torch.transpose(distances.repeat(shape_tensor.shape[0],1) + 1 - self.smallScoreTensor.to(self.deviceName),1,0)
+        weibulls = torch.distributions.weibull.Weibull(scale_tensor.to(self.deviceName),shape_tensor.to(self.deviceName))
         return weibulls.cdf(distances)
+
 
     def _weibullFitting(self, dataTensor, tailSize, isSorted=False):
         self.deviceName = dataTensor.device
@@ -64,6 +73,7 @@ class weibull:
             self.wbFits = self._fit(processedTensor)
         else:
             return self._fit(processedTensor)
+
 
     def _weibullFilltingInBatches(self, dataTensor, tailSize, isSorted = False):
         N =  dataTensor.shape[0]
@@ -98,6 +108,7 @@ class weibull:
         resultTensor[startIndex:endIndex,:] = result_batch.cpu()
     
         self.wbFits = resultTensor   
+
 
     def _fit(self, data, iters=100, eps=1e-6):
         """
@@ -139,7 +150,6 @@ class weibull:
         
     
     def _determine_splits(self, inputTensor, tailSize, isSorted = 0):
-    
         dtype_bytes = 8 # since float64
         # split chunks according to available GPU memory
         nvmlInit()
