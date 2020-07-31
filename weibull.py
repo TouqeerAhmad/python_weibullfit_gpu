@@ -130,13 +130,16 @@ class weibull:
             # Partial derivative df/dk
             x_k = data ** torch.transpose(k.repeat(data.shape[1],1),0,1)
             x_k_ln_x = x_k * ln_x
-            ff = torch.sum(x_k_ln_x,dim=1)
             fg = torch.sum(x_k,dim=1)
-            f1 = torch.mean(ln_x,dim=1)
-            f = ff/fg - f1 - (1.0 / k)
+            del x_k
+            ff = torch.sum(x_k_ln_x,dim=1)
             ff_prime = torch.sum(x_k_ln_x * ln_x,dim=1)
-            fg_prime = ff
-            f_prime = (ff_prime / fg - (ff / fg * fg_prime / fg)) + (1. / (k * k))
+            del x_k_ln_x
+            ff_by_fg = ff/fg
+            del ff
+            f = ff_by_fg - torch.mean(ln_x,dim=1) - (1.0 / k)
+            f_prime = (ff_prime / fg - (ff_by_fg**2)) + (1. / (k * k))
+            del ff_prime, fg
             # Newton-Raphson method k = k - f(k;x)/f'(k;x)
             k -= f / f_prime
             computed_params[not_completed*torch.isnan(f),:] = torch.tensor([float('nan'),float('nan')]).double().to(self.deviceName)
