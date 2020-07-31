@@ -12,9 +12,11 @@ def test_weibullFit():
     result = weibullObj.return_all_parameters()
     print(result)
 
+    del weibullObj
+    new_WeibullObj = weibull.weibull(result)
     dummy_test_data = torch.rand(dataSize).type(torch.DoubleTensor).cuda()
-    print(weibullObj.wscore(dummy_test_data))
-    print(weibullObj.wscore(dummy_test_data).shape)
+    print(new_WeibullObj.wscore(dummy_test_data))
+    print(new_WeibullObj.wscore(dummy_test_data).shape)
     return
 
 if __name__ == '__main__':
