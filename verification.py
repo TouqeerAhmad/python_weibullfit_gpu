@@ -21,9 +21,12 @@ def test_weibullFit():
     dataTensor = torch.from_numpy(data1)
     dataTensor = dataTensor.cuda()
 
-    result = weibull.FitLow(dataTensor, tailSize, 0)
+    weibullObj = weibull.weibull()
+    weibullObj.FitLow(dataTensor, tailSize, 0)
+    result = weibullObj.return_all_parameters()
 
-    print(result)
+    print(result["Scale"])
+    print(result["Shape"])
 
     return
 
