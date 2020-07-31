@@ -79,7 +79,7 @@ class weibull:
         N =  dataTensor.shape[0]
         dtype = dataTensor.dtype
         batchSize = int(np.ceil(N / self.splits))
-        resultTensor = torch.zeros(size=(N,5), dtype=dtype)
+        resultTensor = torch.zeros(size=(N,2), dtype=dtype)
         
         print(N)
         print(self.splits)
@@ -97,7 +97,7 @@ class weibull:
           print(endIndex)
           
         # process the left-over
-        startIndex = (splits-1)*batchSize
+        startIndex = (self.splits-1)*batchSize
         endIndex = N - 1
         
         print(startIndex)
@@ -159,16 +159,8 @@ class weibull:
         #print(gpu_free_mem)
         
         height, width = inputTensor.shape[0], inputTensor.shape[1]
-        if (isSorted): 
-          # memory to hold sorted tensor
-          size_in = height * tailSize * dtype_bytes
-        else:
-          # memory to hold input + sorted tensor 
-          size_in = height * width * dtype_bytes + height * tailSize * dtype_bytes
-        
-        size_intermediate = height * 3 * dtype_bytes + height * 2 * dtype_bytes + height * tailSize * dtype_bytes  
-        size_out = height * 5 * dtype_bytes
-        total_mem = (size_in + size_intermediate + size_out) / (1024 * 1024) # amount in MB
+        size_estimate = height * width * dtype_bytes * 5
+        total_mem = (size_estimate) / (1024 * 1024) # amount in MB
         #print(total_mem)
         
         if total_mem < (gpu_free_mem * 0.7): #no chunks if GPU mem is enough
@@ -177,3 +169,4 @@ class weibull:
             split = round((total_mem) / (gpu_free_mem * 0.7))  
         
         self.splits = split
+        

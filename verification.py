@@ -39,15 +39,14 @@ def test_determine_splits():
     dataTensor = torch.rand((numInstances, dataSize)).type(torch.DoubleTensor)*100	
     #dataTensor = dataTensor.cuda()	
     weibullObj = weibull.weibull()
-    #weibullObj._determine_splits(dataTensor, tailSize, 0)	
+    weibullObj._determine_splits(dataTensor, tailSize, 0)	
     
-    #print(weibullObj.splits)
+    print(weibullObj.splits)
     
-    #weibullObj = weibull.weibull()
     weibullObj.FitLow(dataTensor, tailSize, 0)
     result = weibullObj.return_all_parameters()
     print(result["Shape"].shape)
-    
+    print(result["Shape"])
 
 if __name__ == '__main__':
     #test_weibullFit()
