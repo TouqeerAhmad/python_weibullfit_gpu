@@ -31,13 +31,15 @@ def test_weibullFit():
     return
 
 
-def test_determine_splits():	
+def test_determine_splits():
     dataTensor = torch.rand(size=(1000,40000), dtype=torch.float64)	
     dataTensor = dataTensor.cuda()	
-    splits = determine_splits(dataTensor, 2500, 0)	
-    print(splits)	
+    weibullObj = weibull.weibull()
+    
+    weibullObj.determine_splits(dataTensor, 2500, 0)	
+    print(weibullObj.splits)	
 
 
 if __name__ == '__main__':
-    test_weibullFit()
-   #test_determine_splits()	
+    #test_weibullFit()
+    test_determine_splits()	
