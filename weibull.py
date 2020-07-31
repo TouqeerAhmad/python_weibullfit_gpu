@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import os, sys
 from pynvml import *
@@ -67,20 +68,31 @@ class weibull:
     def _weibullFilltingInBatches(self, dataTensor, tailSize, isSorted = False):
         N =  dataTensor.shape[0]
         dtype = dataTensor.dtype
-        batchSize = np.ceil(N / selft.spilts)
+        batchSize = int(np.ceil(N / self.splits))
         resultTensor = torch.zeros(size=(N,5), dtype=dtype)
         
-        for batchIter in range(self.splits-1):
+        print(N)
+        print(self.splits)
+        print(batchSize)
+        
+        for batchIter in range(int(self.splits-1)):
           startIndex = batchIter*batchSize
           endIndex = startIndex + batchSize - 1
           data_batch = dataTensor[startIndex:endIndex,:].cuda()
           result_batch = _weibullFitting(data_batch, tailSize, isSorted)
           resultTensor[startIndex:endIndex,:] = result_batch.cpu()
           
+          print(batchIter)
+          print(startIndex)
+          print(endIndex)
+          
         # process the left-over
         startIndex = (splits-1)*batchSize
         endIndex = N - 1
         
+        print(startIndex)
+        print(endIndex)
+          
         data_batch = dataTensor[startIndex:endIndex,:].cuda()
         result_batch = _weibullFitting(data_batch, tailSize, isSorted)
         resultTensor[startIndex:endIndex,:] = result_batch.cpu()
