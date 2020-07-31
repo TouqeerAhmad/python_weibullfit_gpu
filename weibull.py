@@ -79,7 +79,7 @@ class weibull:
           startIndex = batchIter*batchSize
           endIndex = startIndex + batchSize - 1
           data_batch = dataTensor[startIndex:endIndex,:].cuda()
-          result_batch = _weibullFitting(data_batch, tailSize, isSorted)
+          result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
           resultTensor[startIndex:endIndex,:] = result_batch.cpu()
           
           print(batchIter)
@@ -94,7 +94,7 @@ class weibull:
         print(endIndex)
           
         data_batch = dataTensor[startIndex:endIndex,:].cuda()
-        result_batch = _weibullFitting(data_batch, tailSize, isSorted)
+        result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
         resultTensor[startIndex:endIndex,:] = result_batch.cpu()
     
         self.wbFits = resultTensor   
