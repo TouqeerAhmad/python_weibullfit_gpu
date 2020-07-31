@@ -36,10 +36,10 @@ def test_determine_splits():
     dataTensor = dataTensor.cuda()	
     weibullObj = weibull.weibull()
     
-    weibullObj.determine_splits(dataTensor, 2500, 0)	
+    weibullObj._determine_splits(dataTensor, 2500, 0)	
     print(weibullObj.splits)	
 
 
 if __name__ == '__main__':
-    #test_weibullFit()
-    test_determine_splits()	
+    test_weibullFit()
+    #test_determine_splits()	

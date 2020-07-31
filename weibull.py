@@ -14,12 +14,26 @@ class weibull:
                     smallScoreTensor = self.smallScoreTensor)
 
     def FitLow(self,data, tailSize, isSorted=False):
+        
         self.sign = -1
-        return self._weibullFitting(data, tailSize, isSorted)
+        self._determine_splits(data, tailSize, isSorted)
+        
+        if self.splits == 1:
+            return self._weibullFitting(data, tailSize, isSorted)
+        else:
+            return self._weibullFilltingInBatches(data, tailSize, isSorted)
+            
 
     def FitHigh(self, data, tailSize, isSorted=False):
+        
         self.sign = 1
-        return self._weibullFitting(data, tailSize, isSorted)
+        self._determine_splits(data, tailSize, isSorted)
+        
+        if self.splits == 1:
+            return self._weibullFitting(data, tailSize, isSorted)
+        else:
+            return self._weibullFilltingInBatches(data, tailSize, isSorted)
+        
 
     def wscore(self, distances):
         """
@@ -45,7 +59,33 @@ class weibull:
         self.smallScoreTensor = sortedTensor[:, tailSize - 1].unsqueeze(1)
         processedTensor = sortedTensor + 1 - self.smallScoreTensor
         # Returned in the format [Shape,Scale]
-        self.wbFits = self._fit(processedTensor)
+        if self.splits == 1:
+            self.wbFits = self._fit(processedTensor)
+        else:
+            return self._fit(processedTensor)
+
+    def _weibullFilltingInBatches(self, dataTensor, tailSize, isSorted = False):
+        N =  dataTensor.shape[0]
+        dtype = dataTensor.dtype
+        batchSize = np.ceil(N / selft.spilts)
+        resultTensor = torch.zeros(size=(N,5), dtype=dtype)
+        
+        for batchIter in range(self.splits-1):
+          startIndex = batchIter*batchSize
+          endIndex = startIndex + batchSize - 1
+          data_batch = dataTensor[startIndex:endIndex,:].cuda()
+          result_batch = _weibullFitting(data_batch, tailSize, isSorted)
+          resultTensor[startIndex:endIndex,:] = result_batch.cpu()
+          
+        # process the left-over
+        startIndex = (splits-1)*batchSize
+        endIndex = N - 1
+        
+        data_batch = dataTensor[startIndex:endIndex,:].cuda()
+        result_batch = _weibullFitting(data_batch, tailSize, isSorted)
+        resultTensor[startIndex:endIndex,:] = result_batch.cpu()
+    
+        self.wbFits = resultTensor   
 
     def _fit(self, data, iters=100, eps=1e-6):
         """
@@ -86,7 +126,7 @@ class weibull:
         return computed_params  # Shape (SC), Scale (FE)
         
     
-    def determine_splits(self, inputTensor, tailSize, isSorted = 0):
+    def _determine_splits(self, inputTensor, tailSize, isSorted = 0):
     
         dtype_bytes = 8 # since float64
         # split chunks according to available GPU memory
@@ -94,7 +134,7 @@ class weibull:
         h = nvmlDeviceGetHandleByIndex(0)
         info = nvmlDeviceGetMemoryInfo(h)
         gpu_free_mem = info.free / (1024 * 1024) # amount of free memeory in MB
-        print(gpu_free_mem)
+        #print(gpu_free_mem)
         
         height, width = inputTensor.shape[0], inputTensor.shape[1]
         if (isSorted): 
@@ -107,7 +147,7 @@ class weibull:
         size_intermediate = height * 3 * dtype_bytes + height * 2 * dtype_bytes + height * tailSize * dtype_bytes  
         size_out = height * 5 * dtype_bytes
         total_mem = (size_in + size_intermediate + size_out) / (1024 * 1024) # amount in MB
-        print(total_mem)
+        #print(total_mem)
         
         if total_mem < (gpu_free_mem * 0.7): #no chunks if GPU mem is enough
             split = 1
