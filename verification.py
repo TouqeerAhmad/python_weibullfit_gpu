@@ -16,6 +16,8 @@ def load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier):
         weibull_fits_libmr[k, :] = data[k][1]
 
     
+    """
+    # libmr based weibull fitting
     start = timer()
     for k in range(numInstances):
         mr = libmr.MR()
@@ -24,7 +26,8 @@ def load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier):
     end = timer()
     print('Time using libmr weibull fitting:')
     print(end - start)
-
+    """
+    
     dataTensor = torch.from_numpy(data1)
     dataTensor = dataTensor.cuda()
     
@@ -43,7 +46,7 @@ def call_weibullFit(dataTensor, tailSize):
 
 
 def test_weibullFit():
-    
+    """
     fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
     numInstances = 10
     dataSize = 40000
@@ -56,7 +59,7 @@ def test_weibullFit():
     dataSize = 474666
     tailSize = 33998
     distance_multiplier = 0.55
-    """
+    
     
     distanceTensor, weibull_fits_libmr = load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier)
     
@@ -67,8 +70,16 @@ def test_weibullFit():
     print(end - start)
     
     print(weibull_fits_libmr)
-    print(result["Shape"])
     print(result["Scale"])
+    print(result["Shape"])
+    
+    
+    scale_numpy = result["Scale"].cpu().numpy()
+    shape_numpy = result["Shape"].cpu().numpy()
+    
+    # printing libmr and new fit estimates for one-to-one comparison
+    for k in range(numInstances):
+        print(weibull_fits_libmr[k,0],weibull_fits_libmr[k,1],scale_numpy[k],shape_numpy[k])
     
     
     #new_WeibullObj = weibull.weibull(result)
