@@ -23,29 +23,35 @@ def call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multip
     weibullObj.FitLow(dataTensor, tailSize, 0)
     result = weibullObj.return_all_parameters()
     
-    return result, weibull_fits_libmr
+    return result, weibull_fits_libmr, dataTensor
 
 
 def test_weibullFit():
-    #fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
+    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
+    numInstances = 10
+    dataSize = 40000
+    tailSize = 2500
+    distance_multiplier = 0.5
     
-    #numInstances = 10
-    #dataSize = 40000
-    #tailSize = 2500
-    #distance_multiplier = 0.5
-    
+    """
     fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/umd_example.npy'
-    
     numInstances = 4000
     dataSize = 474666
     tailSize = 33998
     distance_multiplier = 0.55
+    """
     
-    result, weibull_fits_libmr = call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier)
+    result, weibull_fits_libmr, distanceTensor = call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier)
     
     print(weibull_fits_libmr)
     print(result["Shape"])
     print(result["Scale"])
+    
+    
+    new_WeibullObj = weibull.weibull(result)
+    print(new_WeibullObj.wscore(distanceTensor))
+    print(new_WeibullObj.wscore(distanceTensor).shape)
+    
     
     return
 
