@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 import weibull
-
-
+import libmr
+from timeit import default_timer as timer
 
 def load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier):
     # loading and processing data    
@@ -14,6 +14,16 @@ def load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier):
     for k in range(numInstances):
         data1[k, :] = distance_multiplier * data[k][0]
         weibull_fits_libmr[k, :] = data[k][1]
+
+    
+    start = timer()
+    for k in range(numInstances):
+        mr = libmr.MR()
+        mr.fit_low(data1[k,:], tailSize)
+        param = mr.get_params()
+    end = timer()
+    print('Time using libmr weibull fitting:')
+    print(end - start)
 
     dataTensor = torch.from_numpy(data1)
     dataTensor = dataTensor.cuda()
@@ -33,6 +43,7 @@ def call_weibullFit(dataTensor, tailSize):
 
 
 def test_weibullFit():
+    
     fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
     numInstances = 10
     dataSize = 40000
@@ -48,16 +59,21 @@ def test_weibullFit():
     """
     
     distanceTensor, weibull_fits_libmr = load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier)
+    
+    start = timer()
     result = call_weibullFit(distanceTensor, tailSize)
+    end = timer()
+    print('Time using new weibull fitting:')
+    print(end - start)
     
     print(weibull_fits_libmr)
     print(result["Shape"])
     print(result["Scale"])
     
     
-    new_WeibullObj = weibull.weibull(result)
-    print(new_WeibullObj.wscore(distanceTensor))
-    print(new_WeibullObj.wscore(distanceTensor).shape)
+    #new_WeibullObj = weibull.weibull(result)
+    #print(new_WeibullObj.wscore(distanceTensor))
+    #print(new_WeibullObj.wscore(distanceTensor).shape)
     
     
     return
