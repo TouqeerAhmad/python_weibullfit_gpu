@@ -52,7 +52,9 @@ class weibull:
         shape_tensor = self.wbFits[:, 0]
         if self.sign == -1:
             distances = -distances
-        distances = torch.transpose(distances.repeat(shape_tensor.shape[0],1) + 1 - self.smallScoreTensor.to(self.deviceName),1,0)
+        if len(distances.shape)==1:
+            distances = distances.repeat(shape_tensor.shape[0],1)
+        distances = torch.transpose(distances + 1 - self.smallScoreTensor.to(self.deviceName),1,0)
         weibulls = torch.distributions.weibull.Weibull(scale_tensor.to(self.deviceName),shape_tensor.to(self.deviceName))
         return weibulls.cdf(distances)
 
