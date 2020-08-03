@@ -85,14 +85,14 @@ class weibull:
         
         for batchIter in range(int(self.splits-1)):
           startIndex = batchIter*batchSize
-          endIndex = startIndex + batchSize - 1
+          endIndex = startIndex + batchSize
           data_batch = dataTensor[startIndex:endIndex,:].cuda()
           result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
           resultTensor[startIndex:endIndex,:] = result_batch.cpu()
           
         # process the left-over
         startIndex = (self.splits-1)*batchSize
-        endIndex = N - 1
+        endIndex = N
           
         data_batch = dataTensor[startIndex:endIndex,:].cuda()
         result_batch = self._weibullFitting(data_batch, tailSize, isSorted)
