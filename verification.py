@@ -2,15 +2,12 @@ import numpy as np
 import torch
 import weibull
 
-def test_weibullFit():
-    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
+
+def call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier):
+
+    # loading and processing data    
     data = np.load(fileName, allow_pickle=True)
-
-    numInstances = 10
-    dataSize = 40000
-    tailSize = 2500
-    distance_multiplier = 0.5
-
+    
     data1 = np.zeros(shape=(numInstances, dataSize), dtype=np.float64)
     weibull_fits_libmr = np.zeros(shape=(numInstances, 5), dtype=np.float64)
 
@@ -20,14 +17,36 @@ def test_weibullFit():
 
     dataTensor = torch.from_numpy(data1)
     dataTensor = dataTensor.cuda()
-
+    
+    # actual call to the weibull fit
     weibullObj = weibull.weibull()
     weibullObj.FitLow(dataTensor, tailSize, 0)
     result = weibullObj.return_all_parameters()
+    
+    return result, weibull_fits_libmr
 
-    print(result["Scale"])
+
+def test_weibullFit():
+    #fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
+    
+    #numInstances = 10
+    #dataSize = 40000
+    #tailSize = 2500
+    #distance_multiplier = 0.5
+    
+    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/umd_example.npy'
+    
+    numInstances = 4000
+    dataSize = 474666
+    tailSize = 33998
+    distance_multiplier = 0.55
+    
+    result, weibull_fits_libmr = call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier)
+    
+    print(weibull_fits_libmr)
     print(result["Shape"])
-
+    print(result["Scale"])
+    
     return
 
 
@@ -49,5 +68,5 @@ def test_determine_splits():
     print(result["Shape"])
 
 if __name__ == '__main__':
-    #test_weibullFit()
-    test_determine_splits()	
+    test_weibullFit()
+    #test_determine_splits()	
