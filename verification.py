@@ -16,8 +16,8 @@ def load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier):
         weibull_fits_libmr[k, :] = data[k][1]
 
     
-    """
     # libmr based weibull fitting
+    """
     start = timer()
     for k in range(numInstances):
         mr = libmr.MR()
@@ -44,9 +44,21 @@ def call_weibullFit(dataTensor, tailSize):
     
     return result
 
+def printCompareAllFits(weibull_fits_libmr, result, numInstances):
+    scale_numpy = result["Scale"].cpu().numpy()
+    shape_numpy = result["Shape"].cpu().numpy()
+    
+    # printing libmr and new fit estimates for one-to-one comparison
+    for k in range(numInstances):
+        print(k)
+        print(weibull_fits_libmr[k,0],weibull_fits_libmr[k,1],scale_numpy[k],shape_numpy[k])
+        print(np.isclose(weibull_fits_libmr[k,0],scale_numpy[k]))
+        print(np.isclose(weibull_fits_libmr[k,1],shape_numpy[k]))
+   
+    return
 
 def test_weibullFit():
-    """
+    
     fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/weibulls_example_protocol2.npy'
     numInstances = 10
     dataSize = 40000
@@ -54,12 +66,13 @@ def test_weibullFit():
     distance_multiplier = 0.5
     
     """
-    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/umd_example.npy'
+    #fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/umd_example.npy'
+    fileName = '/scratch/tahmad/files/umd_example.npy'
     numInstances = 4000
     dataSize = 474666
     tailSize = 33998
     distance_multiplier = 0.55
-    
+    """
     
     distanceTensor, weibull_fits_libmr = load_data(fileName, numInstances, dataSize, tailSize, distance_multiplier)
     
@@ -73,19 +86,12 @@ def test_weibullFit():
     print(result["Scale"])
     print(result["Shape"])
     
+    #printCompareAllFits(weibull_fits_libmr, result, numInstances)
     
-    scale_numpy = result["Scale"].cpu().numpy()
-    shape_numpy = result["Shape"].cpu().numpy()
-    
-    # printing libmr and new fit estimates for one-to-one comparison
-    for k in range(numInstances):
-        print(weibull_fits_libmr[k,0],weibull_fits_libmr[k,1],scale_numpy[k],shape_numpy[k])
-    
-    
+    # Testing the wscore function
     #new_WeibullObj = weibull.weibull(result)
     #print(new_WeibullObj.wscore(distanceTensor))
     #print(new_WeibullObj.wscore(distanceTensor).shape)
-    
     
     return
 

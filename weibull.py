@@ -164,3 +164,4 @@ class weibull:
         
         self.splits = split
         
+        #print('self.splits = ', self.splits)
