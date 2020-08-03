@@ -10,7 +10,7 @@ class weibull:
             self.wbFits[:, 1] = saved_model['Scale']
             self.wbFits[:, 0] = saved_model['Shape']
             self.sign = saved_model['signTensor']
-            self._ = saved_model['trnaslateAmoutTensor']
+            self._ = saved_model['translateAmountTensor']
             self.smallScoreTensor = saved_model['smallScoreTensor']
         return
 
@@ -19,7 +19,7 @@ class weibull:
         return dict(Scale = self.wbFits[:, 1],
                     Shape = self.wbFits[:, 0],
                     signTensor = self.sign,
-                    trnaslateAmoutTensor = 1,
+                    translateAmountTensor = 1,
                     smallScoreTensor = self.smallScoreTensor)
 
 
