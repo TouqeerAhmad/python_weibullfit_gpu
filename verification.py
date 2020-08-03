@@ -3,7 +3,7 @@ import torch
 import weibull
 
 
-def call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier):
+def call_weibullFit(fileName, numInstances, dataSize, tailSize, distance_multiplier):
 
     # loading and processing data    
     data = np.load(fileName, allow_pickle=True)
@@ -41,7 +41,7 @@ def test_weibullFit():
     distance_multiplier = 0.55
     """
     
-    result, weibull_fits_libmr, distanceTensor = call_weibullFill(fileName, numInstances, dataSize, tailSize, distance_multiplier)
+    result, weibull_fits_libmr, distanceTensor = call_weibullFit(fileName, numInstances, dataSize, tailSize, distance_multiplier)
     
     print(weibull_fits_libmr)
     print(result["Shape"])
