@@ -95,9 +95,9 @@ def test_weibullFit():
 
 def test_wscore():
     
-    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/mr_example.npy'
-    fileName1 = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/pos_dist_example.npy'
-    fileName2 = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/wscore_example.npy'
+    fileName = '/net/pepper/scratch/tahmad/files/mr_example.npy'
+    fileName1 = '/net/pepper/scratch/tahmad/files/pos_dist_example.npy'
+    fileName2 = '/net/pepper/scratch/tahmad/files/wscore_example.npy'
     
     data = np.load(fileName, allow_pickle=True)
     data1 = np.load(fileName1, allow_pickle=True)
