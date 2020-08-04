@@ -86,15 +86,58 @@ def test_weibullFit():
     print(result["Scale"])
     print(result["Shape"])
     
-    #printCompareAllFits(weibull_fits_libmr, result, numInstances)
+    print(result)
     
-    # Testing the wscore function
-    #new_WeibullObj = weibull.weibull(result)
-    #print(new_WeibullObj.wscore(distanceTensor))
-    #print(new_WeibullObj.wscore(distanceTensor).shape)
+    #printCompareAllFits(weibull_fits_libmr, result, numInstances)
     
     return
 
+
+def test_wscore():
+    
+    fileName = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/mr_example.npy'
+    fileName1 = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/pos_dist_example.npy'
+    fileName2 = '/home/tahmad/work/stand_alone_libMr/python_weibullfit_gpu/sample_data/wscore_example.npy'
+    
+    data = np.load(fileName, allow_pickle=True)
+    data1 = np.load(fileName1, allow_pickle=True)
+    data2 = np.load(fileName2, allow_pickle=True)
+    
+    scale_numpy = np.zeros(shape=(5000), dtype=np.float64)
+    shape_numpy = np.zeros(shape=(5000), dtype=np.float64)
+    smallscore_numpy = np.zeros(shape=(5000), dtype=np.float64)
+    
+    distances = np.zeros(shape=(5000,5000), dtype=np.float64)
+    probs_from_Steve = np.zeros(shape=(5000,5000), dtype=np.float64)
+    
+    for k in range(5000):
+        temp = data[k].get_params()
+        scale_numpy[k] = temp[0]
+        shape_numpy[k] = temp[1]
+        smallscore_numpy[k] = temp[4]    
+        distances[k,:] = data1[k]
+        probs_from_Steve[k,:] = data2[k]
+    
+    dataTensor = torch.from_numpy(distances)
+    dataTensor = dataTensor.cuda()
+    
+    objInitializer = dict(Scale =  torch.from_numpy(scale_numpy).cuda(),
+                    Shape = torch.from_numpy(shape_numpy).cuda(),
+                    signTensor = -1,
+                    translateAmountTensor = 1,
+                    smallScoreTensor = torch.from_numpy(smallscore_numpy).cuda())
+    
+    
+    new_WeibullObj = weibull.weibull(objInitializer)
+    probs = new_WeibullObj.wscore(dataTensor)
+    probs_numpy = probs.cpu().numpy()
+    
+    print('Element-by-Element Comparison for one of the samples')
+    for k in range(5000):
+        print(probs_from_Steve[0,k], probs_numpy[0,k], np.isclose(probs_from_Steve[0,k], probs_numpy[0,k]))
+    
+    return
+    
 
 def test_determine_splits():
     numInstances = 10000
@@ -114,5 +157,6 @@ def test_determine_splits():
     print(result["Shape"])
 
 if __name__ == '__main__':
-    test_weibullFit()
+    #test_weibullFit()
+    test_wscore()
     #test_determine_splits()	
