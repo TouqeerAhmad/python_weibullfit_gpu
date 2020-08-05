@@ -9,18 +9,16 @@ class weibull:
             self.wbFits = torch.zeros(saved_model['Scale'].shape[0],2)
             self.wbFits[:, 1] = saved_model['Scale']
             self.wbFits[:, 0] = saved_model['Shape']
-            self.sign = saved_model['signTensor']
-            self._ = saved_model['translateAmountTensor']
             self.smallScoreTensor = saved_model['smallScoreTensor']
+            self.sign = saved_model['signTensor']
         return
 
 
     def return_all_parameters(self):
         return dict(Scale = self.wbFits[:, 1],
                     Shape = self.wbFits[:, 0],
-                    signTensor = self.sign,
-                    translateAmountTensor = 1,
-                    smallScoreTensor = self.smallScoreTensor)
+                    smallScoreTensor = self.smallScoreTensor,
+                    signTensor = self.sign)
 
 
     def FitLow(self,data, tailSize, isSorted=False):
